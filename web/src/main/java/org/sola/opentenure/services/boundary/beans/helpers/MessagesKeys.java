@@ -137,6 +137,8 @@ public class MessagesKeys {
     public static final String CLAIM_PAGE_SUBMITTED = "CLAIM_PAGE_SUBMITTED";
     /** Claim review has been reverted */
     public static final String CLAIM_PAGE_REVERTED = "CLAIM_PAGE_REVERTED";
+    /** Claim has been issued */
+    public static final String CLAIM_PAGE_ISSUED = "CLAIM_PAGE_ISSUED";
     
     // Claim upload
     

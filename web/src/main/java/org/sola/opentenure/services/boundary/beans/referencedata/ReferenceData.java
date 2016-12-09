@@ -27,6 +27,7 @@ import org.sola.cs.services.ejb.refdata.entities.Language;
 import org.sola.cs.services.ejb.refdata.entities.RejectionReason;
 import org.sola.cs.services.ejb.refdata.entities.RrrType;
 import org.sola.cs.services.ejb.refdata.entities.SourceType;
+import org.sola.cs.services.ejbs.claim.businesslogic.ClaimEJBLocal;
 
 /**
  * Holds methods to retrieve reference data. ALl data are cached when first time
@@ -44,6 +45,9 @@ public class ReferenceData {
     
     @EJB
     RefDataCSEJBLocal refDataEjb;
+    
+    @EJB
+    ClaimEJBLocal claimEjb;
     
     @EJB
     CacheCSEJBLocal cacheEjb;
@@ -225,6 +229,16 @@ public class ReferenceData {
     public List<SourceType> getDocumentTypes(String langCode, boolean onlyActive) {
         return getTypes(refDataEjb.getCodeEntityList(SourceType.class, langCode), onlyActive);
     }
+    
+    /**
+     * Returns list of {@link SourceType} for CCO issuance
+     *
+     * @param langCode Language code
+     * @return
+     */
+    public List<SourceType> getDocumentTypesForCcoIssuance(String langCode) {
+        return claimEjb.getDocumentTypesForIssuance(langCode);
+    }
 
     /**
      * Returns list of {@link IdType}
@@ -317,6 +331,21 @@ public class ReferenceData {
      */
     public SourceType[] getDocumentTypes(boolean addDummy, String langCode, boolean onlyActive) {
         ArrayList<SourceType> result = (ArrayList<SourceType>) getDocumentTypes(langCode, onlyActive);
+        if (addDummy) {
+            result = (ArrayList<SourceType>) result.clone();
+            result.add(0, createDummy(new SourceType()));
+        }
+        return result.toArray(new SourceType[result.size()]);
+    }
+    
+    /**
+     * Returns list of {@link SourceType} for certificate issuance
+     *
+     * @param addDummy If true, empty item will be inserted on the top
+     * @return
+     */
+    public SourceType[] getDocumentTypesForCcoIssuance(boolean addDummy, String langCode) {
+        ArrayList<SourceType> result = (ArrayList<SourceType>) getDocumentTypesForCcoIssuance(langCode);
         if (addDummy) {
             result = (ArrayList<SourceType>) result.clone();
             result.add(0, createDummy(new SourceType()));

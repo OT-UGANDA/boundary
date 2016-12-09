@@ -1,12 +1,16 @@
 package org.sola.opentenure.services.boundary.beans.claim;
 
+import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.ejb.Init;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.Part;
 import org.apache.sanselan.util.IOUtils;
+import org.sola.common.ConfigConstants;
 import org.sola.common.DateUtility;
 import org.sola.common.FileUtility;
 import org.sola.common.StringUtility;
@@ -24,6 +28,7 @@ import org.sola.services.common.EntityAction;
 import org.sola.services.common.LocalInfo;
 import org.sola.services.common.logging.LogUtility;
 import org.sola.cs.services.ejb.refdata.entities.SourceType;
+import org.sola.cs.services.ejb.system.businesslogic.SystemCSEJBLocal;
 
 /**
  * Provides method to manage claim attachments
@@ -44,18 +49,36 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
     @EJB
     ClaimEJBLocal claimEjb;
 
+    @EJB
+    SystemCSEJBLocal systemEjb;
+
     @Inject
     ClaimPageBean claimPageBean;
-    
+
     @Inject
     LanguageBean langBean;
 
     private Attachment attach;
     private Part docFile;
     private boolean isNew = true;
+    private List<SourceType> docTypesForIssuance = null;
+
+    @PostConstruct
+    private void init() {
+        if (docTypesForIssuance == null) {
+            docTypesForIssuance = claimEjb.getDocumentTypesForIssuance(langBean.getLocale());
+        }
+    }
 
     public SourceType[] getDocumentTypes() {
-        return refData.getDocumentTypes(isNew, langBean.getLocale(), true);
+        SourceType[] docType;
+        if (claimPageBean.getCanIssueCertificate()) {
+            // Retrurn only allowed documents
+            docType = refData.getDocumentTypesForCcoIssuance(isNew, langBean.getLocale());
+        } else {
+            docType = refData.getDocumentTypes(isNew, langBean.getLocale(), true);
+        }
+        return docType;
     }
 
     public Attachment getAttach() {
@@ -106,6 +129,19 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
         }
     }
 
+    public boolean getCanEdit(boolean allowEdit, String typeCode) {
+        if (claimPageBean.getCanIssueCertificate()) {
+            // Check doc type which can be edited
+            for (SourceType docType : docTypesForIssuance) {
+                if (docType.getCode().equalsIgnoreCase(typeCode)) {
+                    return true;
+                }
+            }
+        }
+
+        return allowEdit && claimPageBean.getCanEdit();
+    }
+
     public void saveAttachment(final boolean instantSave) throws Exception {
         if (claimPageBean != null) {
             // Make checks
@@ -141,17 +177,24 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
                             LocalInfo.setBaseUrl(getApplicationUrl());
                             AttachmentBinary atth = claimEjb.saveAttachment(arg[0]);
                             claimPageBean.getClaim().getAttachments().add(atth);
-                            if(instantSave){
+                            if (instantSave) {
                                 claimEjb.addClaimAttachment(claimPageBean.getClaim().getId(), attach.getId());
                             }
                         }
                     });
                 } else {
+                    Attachment attachmentToSave = null;
+                    
                     for (Attachment attachment : claimPageBean.getClaim().getAttachments()) {
                         if (attachment.getId().equalsIgnoreCase(attach.getId()) && (attachment.getEntityAction() == null || !attachment.getEntityAction().equals(EntityAction.DELETE))) {
                             MappingManager.getMapper().map(attach, attachment);
+                            attachmentToSave = attachment;
                             break;
                         }
+                    }
+                    
+                    if (claimPageBean.getCanPrintCertificate() && attachmentToSave != null) {
+                        claimEjb.saveClaimAttachment(attachmentToSave, langBean.getLocale());
                     }
                 }
             } catch (Exception e) {

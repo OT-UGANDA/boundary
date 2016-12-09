@@ -86,12 +86,19 @@
                         <h:outputLink value="" class="btn btn-default" onclick="return printClaim()">
                             #{msg.GENERAL_LABEL_PRINT}
                         </h:outputLink>
-                        <h:outputLink value="" class="btn btn-default" onclick="return printClaimCert()">
+                        <h:outputLink value="" class="btn btn-default" 
+                                      rendered="#{claimPageBean.canPrintCertificate}"
+                                      onclick="return printClaimCert()">
                             #{msg.GENERAL_LABEL_PRINT_CERT}
                         </h:outputLink>
-                        <h:outputLink value="" class="btn btn-default" onclick="return printForm23()">
+                        <h:outputLink value="" class="btn btn-default" 
+                                      rendered="#{claimPageBean.canPrintCertificate}"
+                                      onclick="return printForm23()">
                             #{msg.GENERAL_LABEL_PRINT_FORM23}
                         </h:outputLink>
+                        <h:commandButton class="btn btn-default" value="#{msg.GENERAL_LABEL_ISSUE}"
+                                         rendered="#{claimPageBean.canIssueCertificate}"
+                                         action="#{claimPageBean.issueCertificate()}" />
                         
                         <h:inputHidden value="#{claimPageBean.id}" />
                     </h:panelGroup>
@@ -175,12 +182,19 @@
                                         <br />
                                         <h:outputLabel value="#{claimPageBean.claim.claimArea}" /> m<sup>2</sup>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
                                         <label>
                                             #{msg.CLAIM_PAGE_CLAIM_NAME}
                                         </label>
                                         <br />
                                         #{claimPageBean.claim.description}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_ISSUANCE_DATE}
+                                        </label>
+                                        <br />
+                                        #{dateBean.formatDate(claimPageBean.claim.issuanceDate)}
                                     </div>
                                 </div>
 
