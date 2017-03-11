@@ -139,6 +139,8 @@ public class MessagesKeys {
     public static final String CLAIM_PAGE_REVERTED = "CLAIM_PAGE_REVERTED";
     /** Claim has been issued */
     public static final String CLAIM_PAGE_ISSUED = "CLAIM_PAGE_ISSUED";
+    /** Ownership rights have been transferred */
+    public static final String CLAIM_PAGE_RIGHTS_TRANSFERRED = "CLAIM_PAGE_RIGHTS_TRANSFERRED";
     
     // Claim upload
     

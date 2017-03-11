@@ -6,7 +6,7 @@
       xmlns:f="http://java.sun.com/jsf/core">
     <body>
         <ui:composition>
-            <h:link class="BlueLink" rendered="#{claimPageBean.canEdit and allowEdit}"
+            <h:link class="BlueLink" rendered="#{allowEdit}"
                     onclick="return showCommentDialog('')">
                 <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_COMMENT}
             </h:link>
@@ -45,7 +45,7 @@
                 </h:dataTable>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{claimPageBean.canEdit and allowEdit}">
+            <h:panelGroup rendered="#{allowEdit}">
                 <div class="modal fade" id="commentDialog" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="myModalLabel">
                     <div class="modal-dialog">
                         <div class="modal-content">

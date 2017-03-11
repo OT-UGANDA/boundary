@@ -72,7 +72,7 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
 
     public SourceType[] getDocumentTypes() {
         SourceType[] docType;
-        if (claimPageBean.getCanIssueCertificate()) {
+        if (!claimPageBean.getIsTransfer() && claimPageBean.getCanIssueCertificate()) {
             // Retrurn only allowed documents
             docType = refData.getDocumentTypesForCcoIssuance(isNew, langBean.getLocale());
         } else {
@@ -129,7 +129,7 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
         }
     }
 
-    public boolean getCanEdit(boolean allowEdit, String typeCode) {
+    public boolean getCanEdit(String typeCode) {
         if (claimPageBean.getCanIssueCertificate()) {
             // Check doc type which can be edited
             for (SourceType docType : docTypesForIssuance) {
@@ -139,7 +139,7 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
             }
         }
 
-        return allowEdit && claimPageBean.getCanEdit();
+        return false;
     }
 
     public void saveAttachment(final boolean instantSave) throws Exception {

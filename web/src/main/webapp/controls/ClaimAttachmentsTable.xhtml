@@ -6,7 +6,7 @@
       xmlns:f="http://java.sun.com/jsf/core">
     <body>
         <ui:composition>
-            <h:commandLink class="BlueLink" rendered="#{(allowEdit and claimPageBean.canEdit) or claimPageBean.canAddDocuments}">
+            <h:commandLink class="BlueLink" rendered="#{allowEdit or claimPageBean.canAddDocuments}">
                 <f:ajax event="click" 
                         render= ":attachForm:pnlAttachment"
                         onevent="onOpenEditAttachment"
@@ -22,7 +22,7 @@
                              headerClass="table-header">
                     <h:column>
                         <f:facet name="header">#{msg.CLAIM_PAGE_DOCUMENT_TYPE}</f:facet>
-                        <h:commandLink class="BlueLink" rendered="#{claimAttachmentBean.getCanEdit(allowEdit, a.typeCode)}" style="margin-right: 5px;">
+                        <h:commandLink class="BlueLink" rendered="#{allowEdit or claimAttachmentBean.getCanEdit(a.typeCode)}" style="margin-right: 5px;">
                             <f:ajax event="click" 
                                     render= ":attachForm:pnlAttachment"
                                     onevent="onOpenEditAttachment"
@@ -30,7 +30,7 @@
                                     listener="#{claimAttachmentBean.loadAttachment(a.id)}" />
                             <i class="glyphicon glyphicon-pencil"></i>
                         </h:commandLink>
-                        <h:commandLink rendered="#{claimAttachmentBean.getCanEdit(allowEdit, a.typeCode)}"
+                        <h:commandLink rendered="#{allowEdit or claimAttachmentBean.getCanEdit(a.typeCode)}"
                                        style="margin-right: 7px;"
                                        title="#{msg.GENERAL_LABEL_DELETE}"
                                        onclick="return confirm('#{msg.CLAIM_PAGE_CONFIRM_DELETE_ATTACHMENT}')">

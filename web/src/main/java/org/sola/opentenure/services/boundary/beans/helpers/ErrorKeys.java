@@ -196,6 +196,11 @@ public class ErrorKeys {
      */
     public static final String CLAIM_EDIT_NOT_ALLOWED = "CLAIM_EDIT_NOT_ALLOWED";
     /**
+     * Claim can't be transferred. Make sure you have sufficient rights and claim
+     * status is appropriate
+     */
+    public static final String CLAIM_TRANSFER_NOT_ALLOWED = "CLAIM_TRANSFER_NOT_ALLOWED";
+    /**
      * Claim type is required
      */
     public static final String CLAIM_TYPE_REQUIRED = "CLAIM_TYPE_REQUIRED";

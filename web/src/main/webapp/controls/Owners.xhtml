@@ -6,7 +6,7 @@
       xmlns:f="http://java.sun.com/jsf/core">
     <body>
         <ui:composition>
-            <h:commandLink class="BlueLink" rendered="#{allowEdit and claimPageBean.canEdit}">
+            <h:commandLink class="BlueLink" rendered="#{allowEdit}">
                 <f:ajax event="click" 
                         render= ":mainForm:pnlShare"
                         onevent="onOpenEditShare"
@@ -17,292 +17,305 @@
 
             <h:panelGroup id="divShares" layout="block">
                 <ui:repeat var="s" value="#{claimPageBean.claimShares}">
-                    <div class="ShareHeader">
-                        <div class="ShareHeaderCaption">
-                            #{msg.CLAIM_PAGE_SHARE} 
-                            <h:outputText value="#{s.percentage}">
-                                <f:convertNumber type="number" integerOnly="true" />
-                            </h:outputText>%
-                        </div>
-                        <div class="ShareHeaderControls">
-                            <h:commandLink class="WhiteLink" rendered="#{allowEdit and claimPageBean.canEdit}">
-                                <f:ajax event="click" 
-                                        render= ":mainForm:pnlParty"
-                                        onevent="onOpenEditOwner"
-                                        onerror="onOpenEditOwnerError"
-                                        listener="#{claimPageBean.addOwner(true, s.id)}" />
-                                <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_PERSON}
-                            </h:commandLink>
-                            &nbsp;
-                            <h:commandLink class="WhiteLink" 
-                                           style="padding-left: 7px;"
-                                           rendered="#{allowEdit and claimPageBean.canEdit}">
-                                <f:ajax event="click" 
-                                        render= ":mainForm:pnlParty"
-                                        onevent="onOpenEditOwner"
-                                        onerror="onOpenEditOwnerError"
-                                        listener="#{claimPageBean.addOwner(false, s.id)}" />
-                                <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_GROUP}
-                            </h:commandLink>
-                            &nbsp;
-                            <h:commandLink class="WhiteLink" 
-                                           style="padding-left: 7px;"
-                                           rendered="#{allowEdit and claimPageBean.canEdit}">
-                                <f:ajax event="click" 
-                                        render= ":mainForm:divShares"
-                                        onevent="handleAjax"
-                                        onerror="handleAjaxError"
-                                        listener="#{claimPageBean.copyClaimant(s.id)}" />
-                                <i class="glyphicon glyphicon-user"></i> #{msg.CLAIM_PAGE_COPY_FROM_CLAIMANT}
-                            </h:commandLink>
-                            &nbsp;
-                            <h:commandLink class="WhiteLink" rendered="#{allowEdit and claimPageBean.canEdit}">
-                                <f:ajax event="click" 
-                                        render= ":mainForm:pnlShare"
-                                        onevent="onOpenEditShare"
-                                        onerror="onOpenEditShareError"
-                                        listener="#{claimPageBean.loadShare(s.id)}" />
-                                <i class="glyphicon glyphicon-pencil"></i> #{msg.GENERAL_LABEL_EDIT}
-                            </h:commandLink>
-                            &nbsp;
-                            <h:commandLink class="WhiteLink" 
-                                           onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_SHARE_WARNING}')"
-                                           rendered="#{allowEdit and claimPageBean.canEdit}">
-                                <f:ajax event="click" 
-                                        render= ":mainForm:divShares"
-                                        onevent="onDeleteShare"
-                                        listener="#{claimPageBean.deleteShare(s.id)}" />
-                                <i class="glyphicon glyphicon-remove"></i> #{msg.GENERAL_LABEL_DELETE}
-                            </h:commandLink>
-                        </div>
-                        <div class="clearfix"></div>
-                    </div>
-
-                    <ui:repeat var="o" value="#{claimPageBean.getOwners(s.owners)}">
-                        <h:panelGroup rendered="#{o.person}" layout="block">
-                            <div class="OwnerHeader">
-                                <div class="OwnerHeaderCaption">
-                                    #{o.name} #{o.lastName}
-                                </div>
-                                <div class="OwnerHeaderControls">
-                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}" rendered="#{allowEdit and claimPageBean.canEdit}">
-                                        <f:ajax event="click" 
-                                                render= ":mainForm:pnlParty"
-                                                onevent="onOpenEditOwner"
-                                                onerror="onOpenEditOwnerError"
-                                                listener="#{claimPageBean.loadOwner(s.id, o.id)}" />
-                                        <i class="glyphicon glyphicon-pencil"></i>
-                                    </h:commandLink>
-                                    &nbsp;
-                                    <h:commandLink class="BlueLink" 
-                                                   title="#{msg.GENERAL_LABEL_DELETE}" 
-                                                   onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_OWNER_WARNING}')"
-                                                   rendered="#{allowEdit and claimPageBean.canEdit}">
-                                        <f:ajax event="click" 
-                                                render= ":mainForm:divShares"
-                                                onevent="onDeleteOwner"
-                                                onerror="handleAjaxError"
-                                                listener="#{claimPageBean.deleteOwner(s.id, o.id)}" />
-                                        <i class="glyphicon glyphicon-remove"></i>
-                                    </h:commandLink>
-                                </div>
-                                <div class="clearfix"></div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_BIRTHDAY}
-                                    </label>
-                                    <br />
-                                    #{dateBean.getShortDate(o.birthDate)}
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_GENDER}
-                                    </label>
-                                    <br />
-                                    #{claimPageBean.getGenderName(o.genderCode)} 
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
-                                    </label>
-                                    <br />
-                                    #{claimPageBean.getIdTypeName(o.idTypeCode)} 
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_NUMBER}
-                                    </label>
-                                    <br />
-                                    #{o.idNumber}
-                                </div>
-                            </div>
-
-                            <div class="splitter"></div>
-
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.phone} 
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.mobilePhone}
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
-                                    </label>
-                                    <br />
-                                    #{o.address} 
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.email}
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                            </div>
-
-                            <div class="splitter"></div>
+                    
+                    <h:panelGroup id="divShare" layout="block" rendered="#{showHistory or claimPageBean.isShareActive(s)}">
+                        <h:panelGroup id="divHistoryLabel" layout="block" rendered="#{showHistory and claimPageBean.isShareHistoric(s) and claimPageBean.isToDisplaySharesHistory(s)}">
+                            <div class="HistoryLabel">#{msg.GENERAL_LABEL_HISTORY}</div>
                         </h:panelGroup>
-                        <h:panelGroup rendered="#{not o.person}" layout="block">
-                            <div class="OwnerHeader">
-                                <div class="OwnerHeaderCaption">
-                                    #{o.name} #{o.lastName}
-                                </div>
-                                <div class="OwnerHeaderControls">
-                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}" rendered="#{allowEdit and claimPageBean.canEdit}">
-                                        <f:ajax event="click" 
-                                                render= ":mainForm:pnlParty"
-                                                onevent="onOpenEditOwner"
-                                                onerror="onOpenEditOwnerError"
-                                                listener="#{claimPageBean.loadOwner(s.id, o.id)}" />
-                                        <i class="glyphicon glyphicon-pencil"></i>
-                                    </h:commandLink>
-                                    &nbsp;
-                                    <h:commandLink class="BlueLink" 
-                                                   title="#{msg.GENERAL_LABEL_DELETE}" 
-                                                   onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_OWNER_WARNING}')"
-                                                   rendered="#{allowEdit and claimPageBean.canEdit}">
-                                        <f:ajax event="click" 
-                                                render= ":mainForm:divShares"
-                                                onevent="onDeleteOwner"
-                                                onerror="handleAjaxError"
-                                                listener="#{claimPageBean.deleteOwner(s.id, o.id)}" />
-                                        <i class="glyphicon glyphicon-remove"></i>
-                                    </h:commandLink>
-                                </div>
-                                <div class="clearfix"></div>
+                        <div class="ShareHeader">
+                            <div class="ShareHeaderCaption">
+                                #{msg.CLAIM_PAGE_SHARE} 
+                                <h:outputText value="#{s.percentage}">
+                                    <f:convertNumber type="number" integerOnly="true" />
+                                </h:outputText>% 
+                                <h:panelGroup class="LightGreen" rendered="#{!empty s.registrationDate}">
+                                    (#{msg.GENERAL_LABEL_REG_DATE}: #{dateBean.getShortDate(s.registrationDate)})
+                                </h:panelGroup>
                             </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_ESTABLISHMENT_DATE}
-                                    </label>
-                                    <br />
-                                    #{dateBean.getShortDate(o.birthDate)}
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
-                                    </label>
-                                    <br />
-                                    #{claimPageBean.getIdTypeName(o.idTypeCode)} 
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_REGISTRATION_NUMBER}
-                                    </label>
-                                    <br />
-                                    #{o.idNumber}
-                                </div>
-                                <div class="col-md-3">
-
-                                </div>
+                            <div class="ShareHeaderControls">
+                                <h:panelGroup class="LightGreen" rendered="#{!empty s.terminationDate}">
+                                    (#{msg.GENERAL_LABEL_TERMINATION_DATE}: #{dateBean.getShortDate(s.terminationDate)})
+                                </h:panelGroup>
+                                <h:commandLink class="WhiteLink" rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:pnlParty"
+                                            onevent="onOpenEditOwner"
+                                            onerror="onOpenEditOwnerError"
+                                            listener="#{claimPageBean.addOwner(true, s.id)}" />
+                                    <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_PERSON}
+                                </h:commandLink>
+                                &nbsp;
+                                <h:commandLink class="WhiteLink" 
+                                               style="padding-left: 7px;"
+                                               rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:pnlParty"
+                                            onevent="onOpenEditOwner"
+                                            onerror="onOpenEditOwnerError"
+                                            listener="#{claimPageBean.addOwner(false, s.id)}" />
+                                    <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_GROUP}
+                                </h:commandLink>
+                                &nbsp;
+                                <h:commandLink class="WhiteLink" 
+                                               style="padding-left: 7px;"
+                                               rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:divShares"
+                                            onevent="handleAjax"
+                                            onerror="handleAjaxError"
+                                            listener="#{claimPageBean.copyClaimant(s.id)}" />
+                                    <i class="glyphicon glyphicon-user"></i> #{msg.CLAIM_PAGE_COPY_FROM_CLAIMANT}
+                                </h:commandLink>
+                                &nbsp;
+                                <h:commandLink class="WhiteLink" rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:pnlShare"
+                                            onevent="onOpenEditShare"
+                                            onerror="onOpenEditShareError"
+                                            listener="#{claimPageBean.loadShare(s.id)}" />
+                                    <i class="glyphicon glyphicon-pencil"></i> #{msg.GENERAL_LABEL_EDIT}
+                                </h:commandLink>
+                                &nbsp;
+                                <h:commandLink class="WhiteLink" 
+                                               onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_SHARE_WARNING}')"
+                                               rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:divShares"
+                                            onevent="onDeleteShare"
+                                            listener="#{claimPageBean.deleteShare(s.id)}" />
+                                    <i class="glyphicon glyphicon-remove"></i> #{msg.GENERAL_LABEL_DELETE}
+                                </h:commandLink>
                             </div>
+                            <div class="clearfix"></div>
+                        </div>
 
-                            <div class="splitter"></div>
+                        <ui:repeat var="o" value="#{claimPageBean.getOwners(s.owners)}">
+                            <h:panelGroup rendered="#{o.person}" layout="block">
+                                <div class="OwnerHeader">
+                                    <div class="OwnerHeaderCaption">
+                                        #{o.name} #{o.lastName}
+                                    </div>
+                                    <div class="OwnerHeaderControls">
+                                        <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}" rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                            <f:ajax event="click" 
+                                                    render= ":mainForm:pnlParty"
+                                                    onevent="onOpenEditOwner"
+                                                    onerror="onOpenEditOwnerError"
+                                                    listener="#{claimPageBean.loadOwner(s.id, o.id)}" />
+                                            <i class="glyphicon glyphicon-pencil"></i>
+                                        </h:commandLink>
+                                        &nbsp;
+                                        <h:commandLink class="BlueLink" 
+                                                       title="#{msg.GENERAL_LABEL_DELETE}" 
+                                                       onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_OWNER_WARNING}')"
+                                                       rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                            <f:ajax event="click" 
+                                                    render= ":mainForm:divShares"
+                                                    onevent="onDeleteOwner"
+                                                    onerror="handleAjaxError"
+                                                    listener="#{claimPageBean.deleteOwner(s.id, o.id)}" />
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </h:commandLink>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
 
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.phone} 
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.mobilePhone}
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
-                                    </label>
-                                    <br />
-                                    #{o.address} 
-                                </div>
-                                <div class="col-md-3">
-                                    <label>
-                                        #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
-                                    </label>
-                                    <br />
-                                    <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
-                                        #{o.email}
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
-                                        <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
-                                    </h:panelGroup>
-                                </div>
-                            </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_BIRTHDAY}
+                                        </label>
+                                        <br />
+                                        #{dateBean.getShortDate(o.birthDate)}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_GENDER}
+                                        </label>
+                                        <br />
+                                        #{claimPageBean.getGenderName(o.genderCode)} 
+                                    </div>
 
-                            <div class="splitter"></div>
-                        </h:panelGroup>
-                    </ui:repeat>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                        </label>
+                                        <br />
+                                        #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_NUMBER}
+                                        </label>
+                                        <br />
+                                        #{o.idNumber}
+                                    </div>
+                                </div>
+
+                                <div class="splitter"></div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.phone} 
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.mobilePhone}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                        </label>
+                                        <br />
+                                        #{o.address} 
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.email}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <div class="splitter"></div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not o.person}" layout="block">
+                                <div class="OwnerHeader">
+                                    <div class="OwnerHeaderCaption">
+                                        #{o.name} #{o.lastName}
+                                    </div>
+                                    <div class="OwnerHeaderControls">
+                                        <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}" rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                            <f:ajax event="click" 
+                                                    render= ":mainForm:pnlParty"
+                                                    onevent="onOpenEditOwner"
+                                                    onerror="onOpenEditOwnerError"
+                                                    listener="#{claimPageBean.loadOwner(s.id, o.id)}" />
+                                            <i class="glyphicon glyphicon-pencil"></i>
+                                        </h:commandLink>
+                                        &nbsp;
+                                        <h:commandLink class="BlueLink" 
+                                                       title="#{msg.GENERAL_LABEL_DELETE}" 
+                                                       onclick="return confirm('#{msg.CLAIM_PAGE_DELETE_OWNER_WARNING}')"
+                                                       rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
+                                            <f:ajax event="click" 
+                                                    render= ":mainForm:divShares"
+                                                    onevent="onDeleteOwner"
+                                                    onerror="handleAjaxError"
+                                                    listener="#{claimPageBean.deleteOwner(s.id, o.id)}" />
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </h:commandLink>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_ESTABLISHMENT_DATE}
+                                        </label>
+                                        <br />
+                                        #{dateBean.getShortDate(o.birthDate)}
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                        </label>
+                                        <br />
+                                        #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_REGISTRATION_NUMBER}
+                                        </label>
+                                        <br />
+                                        #{o.idNumber}
+                                    </div>
+                                    <div class="col-md-3">
+
+                                    </div>
+                                </div>
+
+                                <div class="splitter"></div>
+
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.phone} 
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.mobilePhone}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                        </label>
+                                        <br />
+                                        #{o.address} 
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                        </label>
+                                        <br />
+                                        <h:panelGroup rendered="#{claimPageBean.canViewFullInfo}">
+                                            #{o.email}
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not claimPageBean.canViewFullInfo}">
+                                            <i>#{msg.CLAIM_PAGE_HIDDEN}</i>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                                <div class="splitter"></div>
+                            </h:panelGroup>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    
                 </ui:repeat>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{claimPageBean.canEdit and allowEdit}">
+            <h:panelGroup rendered="#{allowEdit}">
                 <script language="javascript">
                     function checkShareForm() {
                         var percentageError = '- #{err.CLAIM_SHARE_PERCENTAGE_REQUIRED}';

@@ -100,6 +100,14 @@
                                          rendered="#{claimPageBean.canIssueCertificate}"
                                          action="#{claimPageBean.issueCertificate()}" />
                         
+                        <h:outputLink value="#{request.contextPath}/claim/TransferClaim.xhtml?id=#{claimPageBean.id}" 
+                                      class="btn btn-default" 
+                                      onclick="blockUI()"
+                                      rendered="#{claimPageBean.canTransfer}">
+                            <f:param name="action" value="transfer" />
+                            #{msg.GENERAL_LABEL_TRANSFER}
+                        </h:outputLink>
+                        
                         <h:inputHidden value="#{claimPageBean.id}" />
                     </h:panelGroup>
                 </div>
@@ -291,6 +299,7 @@
                             <div style="padding: 15px 0px;width:800px;">
                                 <ui:include src="/controls/Owners.xhtml">
                                     <ui:param name="allowEdit" value="false" rendererType="java.lang.Boolean"></ui:param>
+                                    <ui:param name="showHistory" value="true" rendererType="java.lang.Boolean"></ui:param>
                                 </ui:include>
                             </div>
                         </div>

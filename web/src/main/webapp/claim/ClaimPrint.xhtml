@@ -231,7 +231,7 @@
 
                 <p><br /></p>
                 <div class="headerCaption">#{msg.CLAIM_PAGE_OWNERS}</div>
-                <ui:repeat var="s" value="#{claimPageBean.claimShares}">
+                <ui:repeat var="s" value="#{claimPageBean.activeShares}">
                     <div style="font-weight: bold; border-bottom: #888 dotted 1px;margin: 10px 0 5px 5px">
                         #{msg.CLAIM_PAGE_SHARE} 
                         <h:outputText value="#{s.percentage}">
@@ -241,11 +241,12 @@
                     <table style="width: 100%;" class="contentTable">
                         <tbody>
                             <ui:repeat var="o" value="#{claimPageBean.getOwners(s.owners)}">
-                                <c:if test="#{o.person}">
+                                <h:panelGroup rendered="#{o.person}" layout="block">
                                     <tr>
                                         <td style="width: 300px;">
                                             <b>#{msg.CLAIM_PAGE_CLAIMANT_NAME}</b><br />
-                                            #{o.name} #{o.lastName}
+                                            #{o.name} 
+                                            #{o.lastName}
                                         </td>
                                         <td>
                                             <b>#{msg.CLAIM_PAGE_CLAIMANT_BIRTHDAY}</b><br />
@@ -268,17 +269,13 @@
                                             #{o.address}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="2">
-                                            <div style="border-bottom: #888 dotted 1px;height: 1px;"></div>
-                                        </td>
-                                    </tr>
-                                </c:if>
-                                <c:if test="#{not o.person}">
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not o.person}" layout="block">
                                     <tr>
                                         <td style="width: 300px;">
                                             <b>#{msg.CLAIM_PAGE_CLAIMANT_NAME}</b><br />
-                                            #{o.name}
+                                            #{o.name} 
                                         </td>
                                         <td>
                                             <b>#{msg.CLAIM_PAGE_ESTABLISHMENT_DATE}</b><br />
@@ -301,12 +298,7 @@
                                             #{o.address}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="2">
-                                            <div style="border-bottom: #888 dotted 1px;height: 1px;"></div>
-                                        </td>
-                                    </tr>
-                                </c:if>
+                                </h:panelGroup>
                             </ui:repeat>
                         </tbody>
                     </table>

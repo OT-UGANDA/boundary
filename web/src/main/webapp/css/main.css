@@ -152,11 +152,25 @@ body{
     margin-bottom:7px;
 }
 
+.HistoryLabel{
+    font-weight: bold;
+    font-size:18px;
+    padding-left:7px;
+    border-bottom: #ccc 2px dotted;
+    background-color: #DDD;
+    margin-top: 20px;
+}
+
 .OwnerHeaderCaption{
     width:500px;
     float:left; 
     font-size:18px;
     padding-left:7px;
+}
+
+.LightGreen{
+    font-size: 12px;
+    color:#dcfebd;
 }
 
 .OwnerHeaderControls{
