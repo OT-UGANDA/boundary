@@ -1,0 +1,243 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <body>
+        <ui:composition>
+            <h:panelGroup id="pnlMortgages">
+                <table id="mainForm:tableMortgages" class="table">
+                    <thead>
+                        <tr>
+                            <th class="table-header" scope="col">#{msg.GENERAL_LABEL_START_DATE}</th>
+                            <th class="table-header" scope="col">#{msg.GENERAL_LABEL_END_DATE}</th>
+                            <th class="table-header" scope="col">#{msg.GENERAL_LABEL_AMOUNT}</th>
+                            <th class="table-header" scope="col">#{msg.GENERAL_LABEL_INTEREST_RATE}</th>
+                            <th class="table-header" scope="col">#{msg.GENERAL_LABEL_STATUS}</th>
+                            <th class="table-header" scope="col">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{claimPageBean.mortgages}" var="m">
+                            <tr>
+                                <td>
+                                    #{dateBean.getShortDate(m.startDate)}
+                                </td>
+                                <td>
+                                    #{dateBean.getShortDate(m.endDate)}
+                                </td>
+                                <td>
+                                    #{m.amount}
+                                </td>
+                                <td>
+                                    #{m.interestRate}%
+                                </td>
+                                <td>
+                                    <ui:fragment rendered='#{m.status eq "h"}'>
+                                        #{msg.GENERAL_LABEL_STATUS_HISTORIC}<br />
+                                        (#{dateBean.getShortDate(m.terminationDate)})
+                                    </ui:fragment>
+                                    <ui:fragment rendered='#{m.status eq "a"}'>
+                                        #{msg.GENERAL_LABEL_STATUS_ACTIVE}
+                                    </ui:fragment>
+                                </td>
+                                <td>
+                                    <ui:fragment rendered='#{m.status eq "a"}'>
+                                        <h:commandLink rendered="#{claimPageBean.canTransfer}" class="RedLink"
+                                                       onclick="return confirm('#{msg.MORTGAGE_CONFIRM_TERMINATE}')">
+                                            <f:ajax listener="#{claimPageBean.terminateRestriction(m.id)}" 
+                                                    event="click" onevent="onTerminateMortgage" onerror="handleAjaxError"
+                                                    render=":mainForm:pnlMortgages" />
+                                            <i class="glyphicon glyphicon-remove"></i> #{msg.GENERAL_LABEL_TERMINATE}
+                                        </h:commandLink>
+                                        <br />
+                                    </ui:fragment>
+                                    <a href="#" onclick="return showHideLaenders('lenders#{m.id}');">
+                                        <i class="glyphicon glyphicon-user"></i> #{msg.GENERAL_LABEL_LENDERS}
+                                    </a>
+                                </td>
+                            </tr>
+                            
+                            <tr id="lenders#{m.id}" style="display: none;border-bottom: 4px solid #87a968;padding-top: 3px;">
+                                <td colspan="6" style="border-top: none;">
+                                    <h:panelGroup id="divParties" layout="block">
+
+                                        <ui:repeat var="o" value="#{m.restrictingParties}">
+                                            <h:panelGroup rendered="#{o.person}" layout="block">
+                                                <div class="OwnerHeader">
+                                                    <div class="OwnerHeaderCaption2">
+                                                        #{o.name} #{o.lastName}
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_BIRTHDAY}
+                                                        </label>
+                                                        <br />
+                                                        #{dateBean.getShortDate(o.birthDate)}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_GENDER}
+                                                        </label>
+                                                        <br />
+                                                        #{claimPageBean.getGenderName(o.genderCode)} 
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                                        </label>
+                                                        <br />
+                                                        #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.idNumber}
+                                                    </div>
+                                                </div>
+
+                                                <div class="splitter"></div>
+
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.phone}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.mobilePhone}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                                        </label>
+                                                        <br />
+                                                        #{o.address} 
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                                        </label>
+                                                        <br />
+                                                        #{o.email}
+                                                    </div>
+                                                </div>
+
+                                                <div class="splitter"></div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not o.person}" layout="block">
+                                                <div class="OwnerHeader">
+                                                    <div class="OwnerHeaderCaption2">
+                                                        #{o.name} #{o.lastName}
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_ESTABLISHMENT_DATE}
+                                                        </label>
+                                                        <br />
+                                                        #{dateBean.getShortDate(o.birthDate)}
+                                                    </div>
+
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                                        </label>
+                                                        <br />
+                                                        #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_REGISTRATION_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.idNumber}
+                                                    </div>
+                                                    <div class="col-md-3">
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="splitter"></div>
+
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.phone}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                                        </label>
+                                                        <br />
+                                                        #{o.mobilePhone}
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                                        </label>
+                                                        <br />
+                                                        #{o.address} 
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label>
+                                                            #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                                        </label>
+                                                        <br />
+                                                        #{o.email}
+                                                    </div>
+                                                </div>
+
+                                                <div class="splitter"></div>
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+
+                <script language="javascript">
+                    function showHideLaenders(rowId){
+                        if($("#" + rowId).is(":visible")){
+                            $("#" + rowId).hide();
+                        } else {
+                            $("#" + rowId).show();
+                        }
+                        return false;
+                    }
+                    
+                    function onTerminateMortgage(data) {
+                        handleAjax(data);
+                        var status = data.status;
+                        switch (status) {
+                            case "success":
+                                animateComponent('mainForm:tableMortgages');
+                                break;
+                        }
+                    }
+                </script>
+            </h:panelGroup>
+        </ui:composition>
+    </body>
+</html>

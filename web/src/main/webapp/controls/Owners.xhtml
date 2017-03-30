@@ -99,7 +99,7 @@
                                         <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}" rendered="#{allowEdit and claimPageBean.isShareActive(s)}">
                                             <f:ajax event="click" 
                                                     render= ":mainForm:pnlParty"
-                                                    onevent="onOpenEditOwner"
+                                                    onevent="onOpenEditOwner" 
                                                     onerror="onOpenEditOwnerError"
                                                     listener="#{claimPageBean.loadOwner(s.id, o.id)}" />
                                             <i class="glyphicon glyphicon-pencil"></i>

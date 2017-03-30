@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"   
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:uc="http://xmlns.jcp.org/jsf/composite/uc"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:body>
+        <ui:composition template="../templates/BasicTemplate.xhtml">
+            <ui:define name="title">
+                #{claimPageBean.header}
+            </ui:define>
+            <ui:define name="head2">
+            </ui:define>
+            <ui:define name="content">
+                <f:metadata>
+                    <f:viewAction action="#{claimPageBean.checkCanManageMortgages()}" onPostback="true" />
+                </f:metadata>
+                <div class="PageName">
+                    <i class="glyphicon glyphicon-list-alt"></i> #{claimPageBean.header} (#{msg.GENERAL_LABEL_MORTGAGE})
+                    <br />
+                    <div class="btn-group">
+                        <h:outputLink value="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{claimPageBean.id}" class="btn btn-default">
+                            #{msg.GENERAL_LABEL_BACK}
+                        </h:outputLink>
+                        <h:commandButton class="btn btn-default" value="#{msg.GENERAL_LABEL_REGISTER}"
+                                         action="#{claimPageBean.registerMortgage()}"
+                                         onclick="blockUI()" />
+                        <h:inputHidden value="#{claimPageBean.id}" />
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="nav-tab-div">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#details" data-toggle="tab">#{msg.MORTGAGE_DETAILS}</a></li>
+                            <li><a href="#attachments" data-toggle="tab">#{msg.CLAIM_PAGE_DOCUMENTS}</a></li>
+                            <li><a href="#comments" data-toggle="tab">#{msg.CLAIM_PAGE_COMMENTS}</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="clearfix"></div>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="details">
+                            <div style="padding: 15px 0px;width:800px;">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.GENERAL_LABEL_START_DATE} <i class="glyphicon glyphicon-required"></i>
+                                        </label>
+                                        <br />
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="glyphicon glyphicon-calendar"></i>
+                                            </span>
+                                            <h:inputText id="txtStartDate" 
+                                                         value="#{claimPageBean.restrictionStartDate}"  
+                                                         class="form-control DateField"
+                                                         maxlength="10"
+                                                         autocomplete="off" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.GENERAL_LABEL_END_DATE} <i class="glyphicon glyphicon-required"></i>
+                                        </label>
+                                        <br />
+                                        <div class="input-group">
+                                            <span class="input-group-addon">
+                                                <i class="glyphicon glyphicon-calendar"></i>
+                                            </span>
+                                            <h:inputText id="txtEndDate" 
+                                                         value="#{claimPageBean.restrictionEndDate}"  
+                                                         class="form-control DateField"
+                                                         maxlength="10"
+                                                         autocomplete="off" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.GENERAL_LABEL_AMOUNT} <i class="glyphicon glyphicon-required"></i>
+                                        </label>
+                                        <br />
+                                        <div class="input-group">
+                                            <h:inputText id="txtAmount" 
+                                                         value="#{claimPageBean.restriction.amount}"  
+                                                         class="form-control"
+                                                         maxlength="12"
+                                                         autocomplete="off">
+                                                <f:convertNumber integerOnly="true" />
+                                            </h:inputText>
+                                        </div> 
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>
+                                            #{msg.GENERAL_LABEL_INTEREST_RATE} <i class="glyphicon glyphicon-required"></i>
+                                        </label>
+                                        <br />
+                                        <div class="input-group">
+                                            <h:inputText id="txtInterestRate" 
+                                                         value="#{claimPageBean.restriction.interestRate}"  
+                                                         class="form-control"
+                                                         maxlength="3"
+                                                         autocomplete="off">
+                                                <f:convertNumber integerOnly="false" />
+                                            </h:inputText>
+                                            <span class="input-group-addon">
+                                                %
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="splitter"></div>
+
+                                <div class="HeaderCaption">#{msg.GENERAL_LABEL_LENDERS} <i class="glyphicon glyphicon-required"></i></div>
+
+                                <h:commandLink class="BlueLink">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:pnlParty"
+                                            onevent="onOpenEditOwner"
+                                            onerror="onOpenEditOwnerError"
+                                            listener="#{claimPageBean.addRestrictingParty(true)}" />
+                                    <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_PERSON}
+                                </h:commandLink>
+                                &nbsp;
+                                <h:commandLink class="BlueLink" 
+                                               style="padding-left: 7px;">
+                                    <f:ajax event="click" 
+                                            render= ":mainForm:pnlParty"
+                                            onevent="onOpenEditOwner"
+                                            onerror="onOpenEditOwnerError"
+                                            listener="#{claimPageBean.addRestrictingParty(false)}" />
+                                    <i class="glyphicon glyphicon-plus"></i> #{msg.CLAIM_PAGE_ADD_GROUP}
+                                </h:commandLink>
+                                
+                                <h:panelGroup id="divParties" layout="block" style="padding-top: 10px;">
+                                    
+                                    <ui:repeat var="o" value="#{claimPageBean.restrictingParties}">
+                                        <h:panelGroup rendered="#{o.person}" layout="block">
+                                            <div class="OwnerHeader">
+                                                <div class="OwnerHeaderCaption">
+                                                    #{o.name} #{o.lastName}
+                                                </div>
+                                                <div class="OwnerHeaderControls">
+                                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}">
+                                                        <f:ajax event="click" 
+                                                                render= ":mainForm:pnlParty"
+                                                                onevent="onOpenEditOwner" 
+                                                                onerror="onOpenEditOwnerError"
+                                                                listener="#{claimPageBean.loadRestrictingParty(o.id)}" />
+                                                        <i class="glyphicon glyphicon-pencil"></i>
+                                                    </h:commandLink>
+                                                    &nbsp;
+                                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_DELETE}"> 
+                                                        <f:ajax event="click" 
+                                                                render= ":mainForm:divParties"
+                                                                onevent="onDeleteOwner"
+                                                                onerror="handleAjaxError"
+                                                                listener="#{claimPageBean.deleteRestrictingParty(o.id)}" />
+                                                        <i class="glyphicon glyphicon-remove"></i>
+                                                    </h:commandLink>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_BIRTHDAY}
+                                                    </label>
+                                                    <br />
+                                                    #{dateBean.getShortDate(o.birthDate)}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_GENDER}
+                                                    </label>
+                                                    <br />
+                                                    #{claimPageBean.getGenderName(o.genderCode)} 
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                                    </label>
+                                                    <br />
+                                                    #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.idNumber}
+                                                </div>
+                                            </div>
+
+                                            <div class="splitter"></div>
+
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.phone}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.mobilePhone}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                                    </label>
+                                                    <br />
+                                                    #{o.address} 
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                                    </label>
+                                                    <br />
+                                                    #{o.email}
+                                                </div>
+                                            </div>
+
+                                            <div class="splitter"></div>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not o.person}" layout="block">
+                                            <div class="OwnerHeader">
+                                                <div class="OwnerHeaderCaption">
+                                                    #{o.name} #{o.lastName}
+                                                </div>
+                                                <div class="OwnerHeaderControls">
+                                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_EDIT}">
+                                                        <f:ajax event="click" 
+                                                                render= ":mainForm:pnlParty"
+                                                                onevent="onOpenEditOwner"
+                                                                onerror="onOpenEditOwnerError"
+                                                                listener="#{claimPageBean.loadRestrictingParty(o.id)}" />
+                                                        <i class="glyphicon glyphicon-pencil"></i>
+                                                    </h:commandLink>
+                                                    &nbsp;
+                                                    <h:commandLink class="BlueLink" title="#{msg.GENERAL_LABEL_DELETE}">
+                                                        <f:ajax event="click" 
+                                                                render= ":mainForm:divParties"
+                                                                onevent="onDeleteOwner"
+                                                                onerror="handleAjaxError"
+                                                                listener="#{claimPageBean.deleteRestrictingParty(o.id)}" />
+                                                        <i class="glyphicon glyphicon-remove"></i>
+                                                    </h:commandLink>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_ESTABLISHMENT_DATE}
+                                                    </label>
+                                                    <br />
+                                                    #{dateBean.getShortDate(o.birthDate)}
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_ID_TYPE}
+                                                    </label>
+                                                    <br />
+                                                    #{claimPageBean.getIdTypeName(o.idTypeCode)} 
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_REGISTRATION_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.idNumber}
+                                                </div>
+                                                <div class="col-md-3">
+
+                                                </div>
+                                            </div>
+
+                                            <div class="splitter"></div>
+
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_PHONE_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.phone}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_MOBILE_PHONE_NUMBER}
+                                                    </label>
+                                                    <br />
+                                                    #{o.mobilePhone}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_ADDRESS}
+                                                    </label>
+                                                    <br />
+                                                    #{o.address} 
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label>
+                                                        #{msg.CLAIM_PAGE_CLAIMANT_EMAIL}
+                                                    </label>
+                                                    <br />
+                                                    #{o.email}
+                                                </div>
+                                            </div>
+
+                                            <div class="splitter"></div>
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                </h:panelGroup>
+
+                                <script language="javascript">
+                                    function onEditOwner(data) {
+                                        handleAjax(data);
+                                        var status = data.status;
+                                        switch (status) {
+                                            case "success":
+                                                $('#ownerDialog').modal('hide');
+                                                break;
+                                        }
+                                    }
+
+                                    function onOpenEditOwner(data) {
+                                        var status = data.status;
+                                        switch (status) {
+                                            case "begin":
+                                                $('#pnlPartyWrapper').hide();
+                                                $('#ownerDialog').modal('show');
+                                                $('#waitMessage').detach().appendTo('#ownerBody');
+                                                $('#waitMessage').show();
+                                                break;
+                                            case "success":
+                                                $('#waitMessage').hide();
+                                                $('#pnlPartyWrapper').detach().appendTo('#ownerBody');
+                                                $('#pnlPartyWrapper').show();
+                                                bindDateFields('#{dateBean.datePattern.toLowerCase()}');
+                                                break;
+                                        }
+                                    }
+
+                                    function onOpenEditOwnerError(data) {
+                                        if (data.type !== "event") {
+                                            $('#waitMessage').hide();
+                                            alert(data.name);
+                                        }
+                                    }
+
+                                    function onDeleteOwner(data) {
+                                        handleAjax(data);
+                                        var status = data.status;
+                                        switch (status) {
+                                            case "success":
+                                                animateComponent('divShares');
+                                                break;
+                                        }
+                                    }
+                                </script>
+
+                                <div style="display: none;" class="modal fade" id="ownerDialog" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog" style="width:700px;">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">#{msg.GENERAL_LABEL_CLOSE}</span></button>
+                                                <h4 class="modal-title">#{msg.GENERAL_LABEL_LENDER}</h4>
+                                            </div>
+                                            <div id="ownerBody" class="modal-body"></div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">#{msg.GENERAL_LABEL_CLOSE}</button>
+                                                <h:commandButton class="btn btn-primary" value="#{msg.GENERAL_LABEL_SAVE}" onclick="return checkPartyForm()">
+                                                    <f:ajax event="click" execute=":mainForm:pnlParty" 
+                                                            render=":mainForm:divParties"
+                                                            onevent="onEditOwner"
+                                                            onerror="handleAjaxError"
+                                                            listener="#{claimPageBean.saveRestrictingParty()}" />
+                                                </h:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="attachments">
+                            <div style="padding: 15px 0px;width:850px;">
+                                <ui:include src="/controls/ClaimAttachmentsTable.xhtml">
+                                    <ui:param name="allowEdit" value="true" rendererType="java.lang.Boolean"></ui:param>
+                                </ui:include>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="comments">
+                            <div style="padding: 15px 0px;width:850px;">
+                                <ui:include src="/controls/ClaimComments.xhtml">
+                                    <ui:param name="allowEdit" value="true" rendererType="java.lang.Boolean"></ui:param>
+                                </ui:include>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script language="javascript">
+                    $(function () {
+                        bindDateFields('#{dateBean.datePattern.toLowerCase()}');
+                    });
+                </script>
+
+                <ui:include src="/controls/Party.xhtml"></ui:include>
+            </ui:define>
+
+            <ui:define name="content2">
+                <ui:include src="/controls/ClaimAttachment.xhtml">
+                    <ui:param name="instantSave" value="false" rendererType="java.lang.Boolean"></ui:param>
+                </ui:include>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+

@@ -449,13 +449,6 @@ public class ReferenceData {
         return result.getDisplayValue();
     }
 
-    private String makeKey(String key, String lang) {
-        if(StringUtility.isEmpty(lang))
-            return key + "_all";
-        else
-            return key + "_" + lang;
-    }
-
     private <T extends AbstractCodeEntity> T createDummy(T entity) {
         entity.setCode("");
         entity.setDisplayValue(" ");

@@ -188,7 +188,7 @@ OT.Map = function(mapOptions) {
     
     if(!hasBaseLayer){
         // Add dummy base layer
-        var emptyBase = new OpenLayers.Layer("Empty",{isBaseLayer: true});
+        var emptyBase = new OpenLayers.Layer("Empty",{isBaseLayer: true, minResolution: 0.001, maxResolution: 200});
         map.addLayers([emptyBase]);
         map.setLayerIndex(emptyBase, 0);
     }

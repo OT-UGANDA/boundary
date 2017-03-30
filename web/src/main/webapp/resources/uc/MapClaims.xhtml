@@ -47,7 +47,7 @@
                         // Add WMS layers
                         var wmsLayer = new OpenLayers.Layer.WMS("#{l.title}", "#{l.url}",
                                     {layers: '#{l.wmsLayers}' #{mapSettingsBean.getLayerParamsString(l, true)}},
-                                    {#{mapSettingsBean.getLayerOptionsString(l, false)}});
+                                    {minResolution: 0.001, maxResolution: 200, #{mapSettingsBean.getLayerOptionsString(l, false)}});
                         wmsLayer.legendOptions = "#{mapSettingsBean.getLegendOptions(l)}";
                         layers.push(wmsLayer);
                     </ui:fragment>

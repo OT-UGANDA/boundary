@@ -151,4 +151,7 @@ public class MessagesKeys {
     
     /** Form has been saved successfully. */
     public static final String FORMS_PAGE_FORM_SAVED = "FORMS_PAGE_FORM_SAVED";
+    
+    /** Mortgage has been successfully registered. */
+    public static final String MORTGAGE_REGISTERED = "MORTGAGE_REGISTERED";
 }

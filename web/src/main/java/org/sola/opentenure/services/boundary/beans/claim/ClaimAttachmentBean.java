@@ -4,13 +4,11 @@ import java.util.List;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.Init;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.Part;
 import org.apache.sanselan.util.IOUtils;
-import org.sola.common.ConfigConstants;
 import org.sola.common.DateUtility;
 import org.sola.common.FileUtility;
 import org.sola.common.StringUtility;
@@ -72,7 +70,7 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
 
     public SourceType[] getDocumentTypes() {
         SourceType[] docType;
-        if (!claimPageBean.getIsTransfer() && claimPageBean.getCanIssueCertificate()) {
+        if (!claimPageBean.getIsTransfer() && !claimPageBean.getIsRestriction() && claimPageBean.getCanIssueCertificate()) {
             // Retrurn only allowed documents
             docType = refData.getDocumentTypesForCcoIssuance(isNew, langBean.getLocale());
         } else {
@@ -129,7 +127,7 @@ public class ClaimAttachmentBean extends AbstractBackingBean {
         }
     }
 
-    public boolean getCanEdit(String typeCode) {
+        public boolean getCanEdit(String typeCode) {
         if (claimPageBean.getCanIssueCertificate()) {
             // Check doc type which can be edited
             for (SourceType docType : docTypesForIssuance) {

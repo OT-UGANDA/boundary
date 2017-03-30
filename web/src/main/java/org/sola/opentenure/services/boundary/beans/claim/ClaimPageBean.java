@@ -37,6 +37,7 @@ import org.sola.cs.services.ejbs.claim.entities.ClaimLocation;
 import org.sola.cs.services.ejbs.claim.entities.ClaimParty;
 import org.sola.cs.services.ejbs.claim.entities.ClaimPermissions;
 import org.sola.cs.services.ejbs.claim.entities.ClaimShare;
+import org.sola.cs.services.ejbs.claim.entities.Restriction;
 import org.sola.opentenure.services.boundary.beans.AbstractBackingBean;
 import org.sola.opentenure.services.boundary.beans.exceptions.OTWebException;
 import org.sola.opentenure.services.boundary.beans.features.AdditionalLocationFeature;
@@ -108,6 +109,7 @@ public class ClaimPageBean extends AbstractBackingBean {
     private final String ACTION_SAVED = "saved";
     private final String ACTION_TRANSFER = "transfer";
     private final String ACTION_TRANSFERRED = "transferred";
+    private final String ACTION_MORTGAGED = "mortgaged";
     private String rejectionReasonCode;
     private String commentText;
     private String commentId;
@@ -120,6 +122,7 @@ public class ClaimPageBean extends AbstractBackingBean {
     private String challengeExpiryTime;
     private String challengeExpiryDate;
     private boolean isTransfer = false;
+    private boolean isRestriction = false;
 
     public ClaimPageBean() {
         super();
@@ -134,6 +137,12 @@ public class ClaimPageBean extends AbstractBackingBean {
         if (!StringUtility.isEmpty(action)) {
             if (action.equalsIgnoreCase(ACTION_TRANSFER)) {
                 isTransfer = true;
+            }
+            if (action.equalsIgnoreCase("restriction")) {
+                isRestriction = true;
+            }
+            if(action.equalsIgnoreCase(ACTION_MORTGAGED)){
+                msg.setSuccessMessage(msgProvider.getMessage(MessagesKeys.MORTGAGE_REGISTERED));
             }
             if (action.equalsIgnoreCase(ACTION_TRANSFERRED)) {
                 msg.setSuccessMessage(msgProvider.getMessage(MessagesKeys.CLAIM_PAGE_RIGHTS_TRANSFERRED));
@@ -445,6 +454,22 @@ public class ClaimPageBean extends AbstractBackingBean {
         return challengingClaims;
     }
 
+    public Restriction[] getMortgages() {
+        if (claim != null && claim.getRestrictions() != null && claim.getRestrictions().size() > 0) {
+            List<Restriction> mortgages = new ArrayList<>();
+
+            for (Restriction restriction : claim.getRestrictions()) {
+                if (restriction.getTypeCode().equalsIgnoreCase(RrrType.TYPE_MORTGAGE)
+                        && (restriction.getEntityAction() == null
+                        || (!restriction.getEntityAction().equals(EntityAction.DELETE)))) {
+                    mortgages.add(restriction);
+                }
+            }
+            return mortgages.toArray(new Restriction[mortgages.size()]);
+        }
+        return null;
+    }
+
     public Attachment[] getAttachments() {
         if (claim != null && claim.getAttachments() != null && claim.getAttachments().size() > 0) {
             List<Attachment> attachments = new ArrayList<>();
@@ -600,6 +625,12 @@ public class ClaimPageBean extends AbstractBackingBean {
         }
     }
 
+    public void checkCanManageMortgages() throws Exception {
+        if (!getClaimPermissions().isCanTransfer()) {
+            throw new OTWebException(msgProvider.getErrorMessage(ErrorKeys.CLAIM_MANAGE_MORTGAGES_ALLOWED));
+        }
+    }
+
     public boolean getCanTransfer() {
         return getClaimPermissions().isCanTransfer();
     }
@@ -646,7 +677,7 @@ public class ClaimPageBean extends AbstractBackingBean {
                     challengeExpiryTime = dateBean.getTime(claim.getChallengeExpiryDate());
                     challengeExpiryDate = dateBean.getShortDate(claim.getChallengeExpiryDate());
 
-                    // If transfer transaction, mark existing shares with historic status and remove documents and comments for not displaying them
+                    // If transfer transaction, mark existing shares with historic status
                     if (isTransfer) {
                         if (claim.getShares() != null) {
                             for (ClaimShare claimShare : claim.getShares()) {
@@ -664,10 +695,46 @@ public class ClaimPageBean extends AbstractBackingBean {
                             claim.getComments().clear();
                         }
                     }
+
+                    // If transfer or restriction registration transaction, remove restrictions, documents and comments for not displaying them
+                    if (isTransfer || isRestriction) {
+                        if (claim.getAttachments() != null) {
+                            claim.getAttachments().clear();
+                        }
+
+                        if (claim.getComments() != null) {
+                            claim.getComments().clear();
+                        }
+
+                        if (claim.getRestrictions() != null) {
+                            claim.getRestrictions().clear();
+                        }
+                    }
+
+                    // If restriction registration transaction, remove shares and add new restriction
+                    if (isRestriction) {
+                        if (claim.getShares() != null) {
+                            claim.getShares().clear();
+                        }
+
+                        // Add new restrictions
+                        if (claim.getRestrictions() == null) {
+                            claim.setRestrictions(new ArrayList<Restriction>());
+                        }
+
+                        Restriction restriction = new Restriction();
+                        restriction.setId(UUID.randomUUID().toString());
+                        restriction.setTypeCode(RrrType.TYPE_MORTGAGE);
+                        restriction.setClaimId(claim.getId());
+                        restriction.setEntityAction(EntityAction.INSERT);
+                        restriction.setRestrictingParties(new ArrayList<ClaimParty>());
+
+                        claim.getRestrictions().add(restriction);
+                    }
                 }
             }
         } else {
-            if (isTransfer) {
+            if (isTransfer || isRestriction) {
                 throw new FacesException(msgProvider.getErrorMessage(ErrorKeys.CLAIM_NOT_FOUND));
             }
 
@@ -726,6 +793,104 @@ public class ClaimPageBean extends AbstractBackingBean {
      */
     public boolean getIsTransfer() {
         return isTransfer;
+    }
+
+    /**
+     * Indicates whether claim page bean is loaded for restriction registration
+     * transaction
+     */
+    public boolean getIsRestriction() {
+        return isRestriction;
+    }
+
+    /**
+     * Returns restriction for registration
+     */
+    public Restriction getRestriction() {
+        if (claim.getRestrictions() != null && claim.getRestrictions().size() > 0) {
+            return claim.getRestrictions().get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public String getRestrictionStartDate() {
+        return dateBean.getShortDate(getRestriction().getStartDate());
+    }
+
+    public void setRestrictionStartDate(String startDate) {
+        if (!StringUtility.isEmpty(startDate)) {
+            getRestriction().setStartDate(DateUtility.convertToDate(startDate, dateBean.getDatePattern()));
+        } else {
+            getRestriction().setStartDate(null);
+        }
+    }
+
+    public String getRestrictionEndDate() {
+        return dateBean.getShortDate(getRestriction().getStartDate());
+    }
+
+    public void setRestrictionEndDate(String endDate) {
+        if (!StringUtility.isEmpty(endDate)) {
+            getRestriction().setEndDate(DateUtility.convertToDate(endDate, dateBean.getDatePattern()));
+        } else {
+            getRestriction().setEndDate(null);
+        }
+    }
+
+    public ClaimParty[] getRestrictingParties() {
+        if (getRestriction() != null) {
+            List<ClaimParty> parties = new ArrayList<>();
+            for (ClaimParty restrictingParty : getRestriction().getRestrictingParties()) {
+                if (restrictingParty.getEntityAction() == null || (!restrictingParty.getEntityAction().equals(EntityAction.DELETE))) {
+                    parties.add(restrictingParty);
+                }
+            }
+            return parties.toArray(new ClaimParty[parties.size()]);
+        }
+        return null;
+    }
+
+    public void loadRestrictingParty(String partyId) {
+        // Make a copy of party
+        for (ClaimParty restrictingParty : getRestriction().getRestrictingParties()) {
+            if (restrictingParty.getId().equalsIgnoreCase(partyId) && (restrictingParty.getEntityAction() == null || !restrictingParty.getEntityAction().equals(EntityAction.DELETE))) {
+                MappingManager.getMapper().map(restrictingParty, party);
+                break;
+            }
+        }
+    }
+
+    public void deleteRestrictingParty(String partyId) {
+        for (ClaimParty restrictingParty : getRestriction().getRestrictingParties()) {
+            if (restrictingParty.getId().equalsIgnoreCase(partyId) && (restrictingParty.getEntityAction() == null || !restrictingParty.getEntityAction().equals(EntityAction.DELETE))) {
+                restrictingParty.setEntityAction(EntityAction.DELETE);
+                break;
+            }
+        }
+    }
+
+    public void addRestrictingParty(boolean isPerson) {
+        party = new ClaimParty();
+        party.setEntityAction(EntityAction.INSERT);
+        party.setId(UUID.randomUUID().toString());
+        party.setPerson(isPerson);
+    }
+
+    public void saveRestrictingParty() throws Exception {
+        if (validateParty(party, true)) {
+            boolean found = false;
+            for (ClaimParty tmpParty : getRestriction().getRestrictingParties()) {
+                if (tmpParty.getId().equalsIgnoreCase(party.getId()) && (tmpParty.getEntityAction() == null || !tmpParty.getEntityAction().equals(EntityAction.DELETE))) {
+                    MappingManager.getMapper().map(party, tmpParty);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                getRestriction().getRestrictingParties().add(MappingManager.getMapper().map(party, ClaimParty.class));
+            }
+        }
     }
 
     public void issueCertificate() {
@@ -907,6 +1072,91 @@ public class ClaimPageBean extends AbstractBackingBean {
         }
     }
 
+    public void registerMortgage() {
+        try {
+            if (!validateMortgage()) {
+                return;
+            }
+            // Register mortgage
+            runUpdate(new Runnable() {
+                @Override
+                public void run() {
+                    LocalInfo.setBaseUrl(getApplicationUrl());
+                    claim = claimEjb.registerMortgage(claim, langBean.getLocale());
+                }
+            });
+            redirectWithAction(ACTION_MORTGAGED);
+            
+        } catch (Exception e) {
+            getContext().addMessage(null, new FacesMessage(processException(e, langBean.getLocale()).getMessage()));
+        }
+    }
+    
+    public void terminateRestriction(final String id) {
+        try {
+            // Terminate mortgage
+            runUpdate(new Runnable() {
+                @Override
+                public void run() {
+                    LocalInfo.setBaseUrl(getApplicationUrl());
+                    Restriction restr = claimEjb.terminateRestriction(id);
+                    if(restr != null){
+                        // remove terminated and add it to the back
+                        for(int i = 0; i < claim.getRestrictions().size(); i++){
+                            if(claim.getRestrictions().get(i).getId().equalsIgnoreCase(id)){
+                                claim.getRestrictions().remove(i);
+                                break;
+                            }
+                        }
+                        claim.getRestrictions().add(restr);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            getContext().addMessage(null, new FacesMessage(processException(e, langBean.getLocale()).getMessage()));
+        }
+    }
+
+    private boolean validateMortgage() {
+        if (getRestriction() == null) {
+            return false;
+        }
+
+        boolean isValid = true;
+
+        if (getRestriction().getStartDate() == null) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_START_DATE)));
+            isValid = false;
+        }
+
+        if (getRestriction().getEndDate() == null) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_END_DATE)));
+            isValid = false;
+        }
+
+        if (getRestriction().getStartDate() != null && getRestriction().getEndDate() != null && 
+                getRestriction().getStartDate().after(getRestriction().getEndDate())) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_START_DATE_LESS_END_DATE)));
+            isValid = false;
+        }
+        
+        if (getRestriction().getAmount() == null) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_AMOUNT)));
+            isValid = false;
+        }
+
+        if (getRestriction().getInterestRate() == null) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_INTEREST_RATE)));
+            isValid = false;
+        }
+
+        if (getRestriction().getRestrictingParties() == null || getRestriction().getRestrictingParties().size() < 1) {
+            getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_LENDERS)));
+            isValid = false;
+        }
+        return isValid;
+    }
+
     private boolean validateClaim() throws Exception {
         boolean isValid = true;
         boolean fullValidation = !getIsSubmitted();
@@ -925,7 +1175,7 @@ public class ClaimPageBean extends AbstractBackingBean {
         if (claim.getClaimant() == null) {
             isValid = false;
             getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_CLAIMANT_REQUIRED)));
-        } else if (!validateParty(claim.getClaimant(), true, false)) {
+        } else if (!validateParty(claim.getClaimant(), false)) {
             isValid = false;
         }
         // Challenge expiry date
@@ -1016,14 +1266,12 @@ public class ClaimPageBean extends AbstractBackingBean {
                 getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_CHALLENGED_CLAIM_NOT_FOUND)));
                 isValid = false;
             } else // Check challenged claim status
-            {
-                if (!challengedClaimTmp.getStatusCode().equalsIgnoreCase(ClaimStatusConstants.UNMODERATED)
+             if (!challengedClaimTmp.getStatusCode().equalsIgnoreCase(ClaimStatusConstants.UNMODERATED)
                         || challengedClaimTmp.getChallengeExpiryDate().before(Calendar.getInstance().getTime())
                         || !StringUtility.isEmpty(challengedClaimTmp.getChallengedClaimId())) {
                     getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_CHALLENGED_CLAIM_CANT_CHALLENGED)));
                     isValid = false;
                 }
-            }
         }
 
         // Check shares
@@ -1056,7 +1304,7 @@ public class ClaimPageBean extends AbstractBackingBean {
                             // Validate owners
                             for (ClaimParty claimParty : claimShare.getOwners()) {
                                 if (claimParty.getEntityAction() == null || !claimParty.getEntityAction().equals(EntityAction.DELETE)) {
-                                    if (!validateParty(claimParty, false, false)) {
+                                    if (!validateParty(claimParty, false)) {
                                         return false;
                                     }
                                 }
@@ -1088,7 +1336,7 @@ public class ClaimPageBean extends AbstractBackingBean {
         return shares;
     }
 
-    private boolean validateParty(ClaimParty party, boolean isClaimant, boolean throwException) throws Exception {
+    private boolean validateParty(ClaimParty party, boolean throwException) throws Exception {
         if (party == null) {
             return false;
         }
@@ -1097,16 +1345,10 @@ public class ClaimPageBean extends AbstractBackingBean {
         String errors = "";
 
         if (StringUtility.isEmpty(party.getName())) {
-            if (isClaimant) {
-                if (throwException) {
-                    errors += "- " + msgProvider.getErrorMessage(ErrorKeys.CLAIM_CLAIMANT_NAME_REQUIRED) + "\r\n";
-                } else {
-                    getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_CLAIMANT_NAME_REQUIRED)));
-                }
-            } else if (throwException) {
-                errors += "- " + msgProvider.getErrorMessage(ErrorKeys.CLAIM_OWNER_NAME_REQUIRED) + "\r\n";
+            if (throwException) {
+                errors += "- " + msgProvider.getErrorMessage(ErrorKeys.CLAIM_NAME_REQUIRED) + "\r\n";
             } else {
-                getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_OWNER_NAME_REQUIRED)));
+                getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.CLAIM_NAME_REQUIRED)));
             }
             isValid = false;
         }
@@ -1147,7 +1389,7 @@ public class ClaimPageBean extends AbstractBackingBean {
     }
 
     public void saveClaimant() throws Exception {
-        if (validateParty(party, true, true)) {
+        if (validateParty(party, true)) {
             if (claim.getClaimant() == null) {
                 claim.setClaimant(MappingManager.getMapper().map(party, ClaimParty.class));
             } else {
@@ -1215,7 +1457,7 @@ public class ClaimPageBean extends AbstractBackingBean {
     }
 
     public void saveOwner() throws Exception {
-        if (validateParty(party, true, true) && !StringUtility.isEmpty(shareId)) {
+        if (validateParty(party, true) && !StringUtility.isEmpty(shareId)) {
             addOwner(party, shareId);
         }
     }
@@ -1332,12 +1574,10 @@ public class ClaimPageBean extends AbstractBackingBean {
 
     public void deleteComment(final String commentId) {
         try {
-            if (getCanEdit()) {
-                for (ClaimComment comment : claim.getComments()) {
-                    if (comment.getId().equalsIgnoreCase(commentId)) {
-                        comment.setEntityAction(EntityAction.DELETE);
-                        break;
-                    }
+            for (ClaimComment comment : claim.getComments()) {
+                if (comment.getId().equalsIgnoreCase(commentId)) {
+                    comment.setEntityAction(EntityAction.DELETE);
+                    break;
                 }
             }
         } catch (Exception e) {
@@ -1358,11 +1598,10 @@ public class ClaimPageBean extends AbstractBackingBean {
             }
 
             if (attachment != null) {
-                if (getCanEdit()) {
-                    attachment.setEntityAction(EntityAction.DELETE);
-                } else if (getCanPrintCertificate()) {
-                    attachment.setEntityAction(EntityAction.DELETE);
+                attachment.setEntityAction(EntityAction.DELETE);
+                if (getCanPrintCertificate()) {
                     claimEjb.saveClaimAttachment(attachment, langBean.getLocale());
+                    claim.getAttachments().remove(attachment);
                 }
             }
         } catch (Exception e) {
