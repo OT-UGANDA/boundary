@@ -141,7 +141,7 @@ public class ClaimPageBean extends AbstractBackingBean {
             if (action.equalsIgnoreCase("restriction")) {
                 isRestriction = true;
             }
-            if(action.equalsIgnoreCase(ACTION_MORTGAGED)){
+            if (action.equalsIgnoreCase(ACTION_MORTGAGED)) {
                 msg.setSuccessMessage(msgProvider.getMessage(MessagesKeys.MORTGAGE_REGISTERED));
             }
             if (action.equalsIgnoreCase(ACTION_TRANSFERRED)) {
@@ -339,6 +339,15 @@ public class ClaimPageBean extends AbstractBackingBean {
     public String getStatusName() {
         if (StringUtility.isEmpty(statusName) && claim != null) {
             statusName = refData.getBeanDisplayValue(refData.getClaimStatuses(langBean.getLocale()), claim.getStatusCode());
+            if (!StringUtility.isEmpty(claim.getTerminationReasonCode())) {
+                statusName = statusName + "<br />(";
+                statusName = statusName + refData.getBeanDisplayValue(refData.getTerminationReasons(langBean.getLocale()), claim.getTerminationReasonCode());
+                if (claim.getTerminationDate() != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    statusName = statusName + " on " + sdf.format(claim.getTerminationDate());
+                }
+                statusName = statusName + ")";
+            }
         }
         return statusName;
     }
@@ -521,6 +530,24 @@ public class ClaimPageBean extends AbstractBackingBean {
 
     public boolean isShareHistoric(ClaimShare claimShare) {
         return StringUtility.empty(claimShare.getStatus()).equalsIgnoreCase(ClaimShare.STATUS_HISTORIC);
+    }
+
+    public boolean getHasHistory() {
+        return (claim.getParentClaims() != null && claim.getParentClaims().size() > 0) || (claim.getChildClaims() != null && claim.getChildClaims().size() > 0);
+    }
+    
+    public Claim[] getParentClaims(){
+        if(claim.getParentClaims() != null){
+            return claim.getParentClaims().toArray(new Claim[claim.getParentClaims().size()]);
+        }
+        return new Claim[0];
+    }
+    
+    public Claim[] getChildrenClaims(){
+        if(claim.getChildClaims()!= null){
+            return claim.getChildClaims().toArray(new Claim[claim.getChildClaims().size()]);
+        }
+        return new Claim[0];
     }
 
     public ClaimShare[] getClaimShares() {
@@ -1086,12 +1113,12 @@ public class ClaimPageBean extends AbstractBackingBean {
                 }
             });
             redirectWithAction(ACTION_MORTGAGED);
-            
+
         } catch (Exception e) {
             getContext().addMessage(null, new FacesMessage(processException(e, langBean.getLocale()).getMessage()));
         }
     }
-    
+
     public void terminateRestriction(final String id) {
         try {
             // Terminate mortgage
@@ -1100,10 +1127,10 @@ public class ClaimPageBean extends AbstractBackingBean {
                 public void run() {
                     LocalInfo.setBaseUrl(getApplicationUrl());
                     Restriction restr = claimEjb.terminateRestriction(id);
-                    if(restr != null){
+                    if (restr != null) {
                         // remove terminated and add it to the back
-                        for(int i = 0; i < claim.getRestrictions().size(); i++){
-                            if(claim.getRestrictions().get(i).getId().equalsIgnoreCase(id)){
+                        for (int i = 0; i < claim.getRestrictions().size(); i++) {
+                            if (claim.getRestrictions().get(i).getId().equalsIgnoreCase(id)) {
                                 claim.getRestrictions().remove(i);
                                 break;
                             }
@@ -1134,12 +1161,12 @@ public class ClaimPageBean extends AbstractBackingBean {
             isValid = false;
         }
 
-        if (getRestriction().getStartDate() != null && getRestriction().getEndDate() != null && 
-                getRestriction().getStartDate().after(getRestriction().getEndDate())) {
+        if (getRestriction().getStartDate() != null && getRestriction().getEndDate() != null
+                && getRestriction().getStartDate().after(getRestriction().getEndDate())) {
             getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_START_DATE_LESS_END_DATE)));
             isValid = false;
         }
-        
+
         if (getRestriction().getAmount() == null) {
             getContext().addMessage(null, new FacesMessage(msgProvider.getErrorMessage(ErrorKeys.MORTGAGE_AMOUNT)));
             isValid = false;

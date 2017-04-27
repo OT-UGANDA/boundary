@@ -154,4 +154,12 @@ public class MessagesKeys {
     
     /** Mortgage has been successfully registered. */
     public static final String MORTGAGE_REGISTERED = "MORTGAGE_REGISTERED";
+    
+    // Claims merge/split
+    
+    /** Claim has been successfully split. Click on the claims below to review the result. */
+    public static final String CLAIM_SPLIT_SUCCESS = "CLAIM_SPLIT_SUCCESS";
+    
+    /** Claims have been successfully merged. Click on the claims below to review the result. */
+    public static final String CLAIMS_MERGE_SUCCESS = "CLAIMS_MERGE_SUCCESS";
 }

@@ -278,7 +278,7 @@
                                             #{msg.CLAIM_PAGE_STATUS}
                                         </label>
                                         <br />
-                                        #{claimPageBean.statusName}
+                                        <h:outputText value="#{claimPageBean.statusName}" escape="false" />
                                     </div>
                                 </div>
 
@@ -295,6 +295,35 @@
                                     <br />
                                 </h:panelGroup>
 
+                                <h:panelGroup id="divHistoryLabel" layout="block" rendered="#{claimPageBean.hasHistory}">
+                                    <div class="HistoryLabel" style="margin-bottom: 10px;">#{msg.GENERAL_LABEL_HISTORY}</div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>
+                                                #{msg.CLAIM_PAGE_PARENT_CLAIMS}
+                                            </label>
+                                            <br />
+                                            <ui:repeat var="c" value="#{claimPageBean.parentClaims}" varStatus="s">
+                                                <ui:fragment rendered="#{s.index gt 0}">
+                                                    , 
+                                                </ui:fragment>
+                                                <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{c.id}">#{c.nr}</a>
+                                            </ui:repeat>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label>
+                                                #{msg.CLAIM_PAGE_CHILDREN_CLAIMS}
+                                            </label>
+                                            <br />
+                                            <ui:repeat var="c" value="#{claimPageBean.childrenClaims}" varStatus="s">
+                                                <ui:fragment rendered="#{s.index gt 0}">,</ui:fragment>
+                                                <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{c.id}">#{c.nr}</a>
+                                            </ui:repeat>
+                                        </div>
+                                    </div>
+                                    <br />
+                                </h:panelGroup>
                             </div>
                         </div>
 

@@ -491,4 +491,27 @@ public class ErrorKeys {
      * Add at least one lender
      */
     public static final String MORTGAGE_LENDERS = "MORTGAGE_LENDERS";
+    
+    /**
+     * Claim was already added to the list
+     */
+    public static final String CLAIM_ALREADY_IN_LIST = "CLAIM_ALREADY_IN_LIST";
+    /**
+     * Selected claim must be with Moderated status
+     */
+    public static final String CLAIM_MUST_BE_MODERATED = "CLAIM_MUST_BE_MODERATED";
+    /**
+     * Selected claim has registered restrictions. They must be terminated first.
+     */
+    public static final String CLAIM_HAS_RESTRICTIONS = "CLAIM_HAS_RESTRICTIONS";
+    /**
+     * Transaction has been already completed.
+     */
+    public static final String TRANSACTION_HAS_BEEN_COMPLETED = "TRANSACTION_HAS_BEEN_COMPLETED";
+    
+    /** For claims merge transaction, there must be at least 2 claims to merge and 1 new claim as a result of merge. */
+    public static final String CLAIMS_MERGE_COUNT = "CLAIMS_MERGE_COUNT";
+    
+    /** For claims split, there must be 1 claim to split and at least 2 new claims as a result of split. */
+    public static final String CLAIM_SPLIT_COUNT = "CLAIM_SPLIT_COUNT";
 }

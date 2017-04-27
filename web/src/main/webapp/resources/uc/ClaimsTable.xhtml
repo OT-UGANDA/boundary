@@ -3,10 +3,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <cc:interface>
         <cc:attribute name="claims" type="org.sola.cs.services.ejb.search.repository.entities.ClaimSearchResult[]" />
+        <cc:attribute name="searchResultClickFunction" type="java.lang.String" default="" />
     </cc:interface>
 
     <cc:implementation>
@@ -15,7 +17,12 @@
                      headerClass="table-header">
             <h:column>
                 <f:facet name="header">#{msg.CLAIM_SEARCH_NUMBER}</f:facet>
-                <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{s.id}">#{s.nr}</a>
+                <ui:fragment rendered="#{cc.attrs.searchResultClickFunction eq ''}">
+                    <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{s.id}">#{s.nr}</a>
+                </ui:fragment>
+                <ui:fragment rendered="#{cc.attrs.searchResultClickFunction ne ''}">
+                    <a href="#" onclick="return #{cc.attrs.searchResultClickFunction}('#{s.id}')">#{s.nr}</a>
+                </ui:fragment>
             </h:column>
             <h:column>
                 <f:facet name="header">#{msg.CLAIM_SEARCH_DESCRIPTION}</f:facet>

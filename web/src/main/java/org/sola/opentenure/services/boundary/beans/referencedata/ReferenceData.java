@@ -28,6 +28,7 @@ import org.sola.cs.services.ejb.refdata.entities.RejectionReason;
 import org.sola.cs.services.ejb.refdata.entities.RrrType;
 import org.sola.cs.services.ejb.refdata.entities.SourceType;
 import org.sola.cs.services.ejbs.claim.businesslogic.ClaimEJBLocal;
+import org.sola.cs.services.ejbs.claim.entities.TerminationReason;
 
 /**
  * Holds methods to retrieve reference data. ALl data are cached when first time
@@ -217,6 +218,16 @@ public class ReferenceData {
      */
     public List<ClaimStatus> getClaimStatuses(String langCode) {
         return refDataEjb.getCodeEntityList(ClaimStatus.class, langCode);
+    }
+    
+    /**
+     * Returns list of {@link TerminationReason}
+     *
+     * @param langCode Language code
+     * @return
+     */
+    public List<TerminationReason> getTerminationReasons(String langCode) {
+        return refDataEjb.getCodeEntityList(TerminationReason.class, langCode);
     }
 
     /**

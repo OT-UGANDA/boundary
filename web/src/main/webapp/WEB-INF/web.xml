@@ -67,6 +67,7 @@
             <url-pattern>/claim/ClaimCertificatePrint.xhtml</url-pattern>
             <url-pattern>/claim/ClaimUpload.xhtml</url-pattern>
             <url-pattern>/claim/ViewClaim.xhtml</url-pattern>
+            <url-pattern>/claim/ClaimsMutation.xhtml</url-pattern>
             <url-pattern>/claim/search.xhtml</url-pattern>
             <url-pattern>/ot-admin/*</url-pattern>
             <url-pattern>/admin/*</url-pattern>

@@ -42,7 +42,11 @@
                                     </li>
                                     <c:if test="#{activeUserBean.canRecordClaim}">
                                         <li><a href="#{request.contextPath}/claim/Claim.xhtml"><i class="glyphicon glyphicon-file"></i> #{msg.MAIN_MENU_NEW}</a></li>
-                                        <li><a href="#{request.contextPath}/claim/ClaimUpload.xhtml"><i class="glyphicon glyphicon-upload"></i> #{msg.MAIN_MENU_UPLOAD}</a></li>                               
+                                        <li><a href="#{request.contextPath}/claim/ClaimUpload.xhtml"><i class="glyphicon glyphicon-upload"></i> #{msg.MAIN_MENU_UPLOAD}</a></li>
+                                    </c:if>
+                                    <c:if test="#{activeUserBean.canModerateClaim}">
+                                        <li><a href="#{request.contextPath}/claim/ClaimsMutation.xhtml?type=merge"><i class="glyphicon glyphicon-link"></i> #{msg.MAIN_MENU_MERGE}</a></li>
+                                        <li><a href="#{request.contextPath}/claim/ClaimsMutation.xhtml?type=split"><i class="glyphicon glyphicon-scissors"></i> #{msg.MAIN_MENU_SPLIT}</a></li>
                                     </c:if>
                                 </ul>
                             </li>

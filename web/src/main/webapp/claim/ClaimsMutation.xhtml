@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"   
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:uc="http://xmlns.jcp.org/jsf/composite/uc">
+    <h:body>
+        <ui:composition template="../templates/BasicTemplate.xhtml">
+            <ui:define name="title">
+                <ui:fragment rendered="#{claimsMutationBean.isMerge}">
+                    #{msg.CLAIMS_MERGE_TITLE}
+                </ui:fragment>
+                <ui:fragment rendered="#{not claimsMutationBean.isMerge}">
+                    #{msg.CLAIM_SPLIT_TITLE}
+                </ui:fragment>
+            </ui:define>
+
+            <ui:define name="content">
+                <f:metadata>
+                    <f:viewAction action="#{claimsMutationBean.checkCanAccess()}" onPostback="true" />
+                </f:metadata>
+                
+                <div class="PageName">
+                    <ui:fragment rendered="#{claimsMutationBean.isMerge}">
+                        <i class="glyphicon glyphicon-link"></i> #{msg.CLAIMS_MERGE_TITLE}
+                        <ui:fragment rendered="#{not claimsMutationBean.completed}">
+                            <br />
+                            <div class="btn-group">
+                                <h:commandButton class="btn btn-default" value="#{msg.MAIN_MENU_MERGE}"
+                                                 action="#{claimsMutationBean.merge()}"
+                                                 onclick="return confirmAction()" />
+                                <h:inputHidden value="1" />
+                            </div>
+                        </ui:fragment>
+                    </ui:fragment>
+                    
+                    <ui:fragment rendered="#{not claimsMutationBean.isMerge}">
+                        <i class="glyphicon glyphicon-scissors"></i> #{msg.CLAIM_SPLIT_TITLE}
+                        <ui:fragment rendered="#{not claimsMutationBean.completed}">
+                            <br />
+                            <div class="btn-group">
+                                <h:commandButton class="btn btn-default" value="#{msg.MAIN_MENU_SPLIT}"
+                                                 action="#{claimsMutationBean.split()}"
+                                                 onclick="return confirmAction()" />
+                                <h:inputHidden value="1" />
+                            </div>
+                        </ui:fragment>
+                    </ui:fragment>
+                </div>
+                <div class="content">
+                    <table class="table" style="width: 500px;">
+                        <thead>
+                            <tr>
+                                <th class="table-header">
+                                    <ui:fragment rendered="#{claimsMutationBean.isMerge}">
+                                        #{msg.CLAIMS_MERGE_CLAIMS_TO_MERGE}
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{not claimsMutationBean.isMerge}">
+                                        #{msg.CLAIM_SPLIT_CLAIM_TO_SPLIT}
+                                    </ui:fragment>
+                                </th>
+                                <th class="table-header">
+                                    #{msg.CLAIMS_MERGE_NEW_CLAIMS}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <h:panelGroup id="pnlOldClaims">
+                                        <ui:repeat var = "claim" value = "#{claimsMutationBean.oldClaims}" id="rptOldClaims">
+                                            <div>
+                                                <h:commandLink rendered="#{not claimsMutationBean.completed}" class="RedLink" style="padding-right: 5px;"
+                                                                title="#{msg.GENERAL_LABEL_DELETE}">
+                                                    <f:ajax listener="#{claimsMutationBean.deleteOldClaim(claim.id)}" 
+                                                             event="click" 
+                                                             onevent="onDeleteOldClaim" 
+                                                             onerror="handleAjaxError"
+                                                             render=":mainForm:pnlOldClaims" />
+                                                     <i class="glyphicon glyphicon-remove"></i>
+                                                 </h:commandLink>
+                                                <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{claim.id}">#{claim.nr}</a>
+                                            </div>
+                                            <br />
+                                        </ui:repeat>
+                                        
+                                        <h:link class="BlueLink" rendered="#{claimsMutationBean.showAddOldClaim}"
+                                                onclick="return showSearchDialog(true)">
+                                            <i class="glyphicon glyphicon-plus"></i> #{msg.GENERAL_LABEL_ADD}
+                                        </h:link>
+                                    </h:panelGroup>
+                                </td>
+                                <td>
+                                    <h:panelGroup id="pnlNewClaims">
+                                        <ui:repeat var = "claim" value = "#{claimsMutationBean.newClaims}" id="rptNewClaims">
+                                            <div style="padding: 1px 0;">
+                                                <h:commandLink rendered="#{not claimsMutationBean.completed}" class="RedLink" style="padding-right: 5px;"
+                                                                title="#{msg.GENERAL_LABEL_DELETE}">
+                                                    <f:ajax listener="#{claimsMutationBean.deleteNewClaim(claim.id)}" 
+                                                             event="click" 
+                                                             onevent="onDeleteNewClaim" 
+                                                             onerror="handleAjaxError"
+                                                             render=":mainForm:pnlNewClaims" />
+                                                     <i class="glyphicon glyphicon-remove"></i>
+                                                 </h:commandLink>
+                                                <a href="#{request.contextPath}/claim/ViewClaim.xhtml?id=#{claim.id}">#{claim.nr}</a>
+                                            </div>
+                                            <br />
+                                        </ui:repeat>
+                                        
+                                        <h:link class="BlueLink" rendered="#{claimsMutationBean.showAddNewClaim}"
+                                                onclick="return showSearchDialog(false)">
+                                            <i class="glyphicon glyphicon-plus"></i> #{msg.GENERAL_LABEL_ADD}
+                                        </h:link>
+                                    </h:panelGroup>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="modal fade" id="searchDialog" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" style="width:1100px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">#{msg.GENERAL_LABEL_CLOSE}</span></button>
+                                <h4 class="modal-title" id="myModalLabel">#{msg.CLAIM_SEARCH_PAGE_TITLE}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div style="height: 400px;overflow: auto;">
+                                    <uc:ClaimSearch id="ctrlClaimSearch" searchByUser="false" searchResultClickFunction = "searchResultClicked" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">#{msg.GENERAL_LABEL_CLOSE}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h:commandButton id="btnAddOldClaim" style="display: none;">
+                    <f:ajax event="click" execute=":mainForm:hClaimToAdd" 
+                                        render=":mainForm:pnlOldClaims"
+                                        onevent="onAddOldClaim"
+                                        onerror="handleAjaxError"
+                                        listener="#{claimsMutationBean.addOldClaim()}" />
+                </h:commandButton>
+                <h:commandButton id="btnAddNewClaim" style="display: none;">
+                    <f:ajax event="click" execute=":mainForm:hClaimToAdd" 
+                                        render=":mainForm:pnlNewClaims"
+                                        onevent="onAddNewClaim"
+                                        onerror="handleAjaxError"
+                                        listener="#{claimsMutationBean.addNewClaim()}" />
+                </h:commandButton>
+                
+                <h:inputHidden id="hClaimToAdd" value="#{claimsMutationBean.claimIdToAdd}" />
+                
+                <script language="javascript">
+                    $(function() {
+                        bindDateFields('#{dateBean.datePattern.toLowerCase()}');
+                    });
+                    
+                    function confirmAction(){
+                        if(confirm('#{msg.CLAIMS_MERGE_CONFIRM}')){
+                            blockUI();
+                            return true;
+                        } 
+                        return false;
+                    }
+                    
+                    var isOldClaimToAdd = false;
+                    
+                    function showSearchDialog(isOld) {
+                        isOldClaimToAdd = isOld;
+                        $('#searchDialog').modal('show');
+                        return false;
+                    }
+                    
+                    function searchResultClicked(claimId){
+                        $('#mainForm\\:hClaimToAdd').val(claimId);
+                        if(isOldClaimToAdd){
+                            $('#mainForm\\:btnAddOldClaim').click();
+                        } else {
+                            $('#mainForm\\:btnAddNewClaim').click();
+                        }
+                        return false;
+                    }
+
+                    function animateOldClaims() {
+                        $('#mainForm\\:pnlOldClaims').hide();
+                        $('#mainForm\\:pnlOldClaims').fadeIn('slow');
+                    }
+                    
+                    function animateNewClaims() {
+                        $('#mainForm\\:pnlNewClaims').hide();
+                        $('#mainForm\\:pnlNewClaims').fadeIn('slow');
+                    }
+
+                    function onDeleteOldClaim(data) {
+                        handleAjax(data);
+                        var status = data.status;
+                        switch (status) {
+                            case "success":
+                                animateOldClaims();
+                                break;
+                        }
+                    }
+
+                    function onAddOldClaim(data) {
+                        handleAjax(data);
+                        var status = data.status;
+                        switch (status) {
+                            case "success":
+                                $('#searchDialog').modal('hide');
+                                animateOldClaims();
+                                break;
+                        }
+                    }
+                    
+                    function onDeleteNewClaim(data) {
+                        handleAjax(data);
+                        var status = data.status;
+                        switch (status) {
+                            case "success":
+                                animateNewClaims();
+                                break;
+                        }
+                    }
+
+                    function onAddNewClaim(data) {
+                        handleAjax(data);
+                        var status = data.status;
+                        switch (status) {
+                            case "success":
+                                $('#searchDialog').modal('hide');
+                                animateNewClaims();
+                                break;
+                        }
+                    }
+                </script>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
+
